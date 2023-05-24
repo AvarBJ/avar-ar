@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <title>AVAR</title>
-  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
-  <script type="importmap">
-    {
+  <head>
+    <title>AVAR</title>
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"
+    ></script>
+    <script type="importmap">
+      {
         "imports": {
           "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
           "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
@@ -13,107 +15,121 @@
         }
       }
     </script>
-  <script type="module">
-    import * as THREE from 'three'
-      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader'
-      import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
-      import { MindARThree } from 'mindar-face-three'
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader";
+      import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+      import { MindARThree } from "mindar-face-three";
       const mindarThree = new MindARThree({
-        container: document.querySelector('#container'),
-      })
-      const { renderer, scene, camera } = mindarThree
-      const anchor = mindarThree.addAnchor(1)
-      const loader = new GLTFLoader()
-      let i = 1
-      new RGBELoader().load('./assets/hdr.hdr', function (texture) {
-        texture.mapping = THREE.EquirectangularReflectionMapping
+        container: document.querySelector("#container"),
+      });
+      const { renderer, scene, camera } = mindarThree;
+      const anchor = mindarThree.addAnchor(1);
+      const loader = new GLTFLoader();
+      let i = 16;
+      new RGBELoader().load("./assets/hdr.hdr", function (texture) {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
 
         // scene.background = texture;
-        scene.environment = texture
-      })
-      loader.load('./assets/headwear/head.glb', (gltf) => {
-        gltf.scene.position.set(0,0.3,-0.1)
+        scene.environment = texture;
+      });
+      loader.load("./assets/headwear/head.glb", (gltf) => {
+        gltf.scene.position.set(0, 0.3, -0.1);
         gltf.scene.traverse((o) => {
           if (o.isMesh) {
             const material = new THREE.MeshStandardMaterial({
               colorWrite: false,
-            })
-            o.material = material
+            });
+            o.material = material;
           }
-        })
-        anchor.group.add(gltf.scene)
-      })
-      loader.load('./assets/head/1.glb', (gltf) => {
-        gltf.scene.position.set(0, -3.8, -1)
-        gltf.scene.scale.set(1.9,1.9,1.9)
-        gltf.scene.name = 'headwear'
-        anchor.group.add(gltf.scene)
-      })
+        });
+        anchor.group.add(gltf.scene);
+      });
+      loader.load("./assets/head/1.glb", (gltf) => {
+        gltf.scene.position.set(0, -3.8, -1);
+        gltf.scene.scale.set(1.9, 1.9, 1.9);
+        gltf.scene.name = "headwear";
+        anchor.group.add(gltf.scene);
+      });
       const start = async () => {
-        await mindarThree.start()
+        init();
+        await mindarThree.start();
         renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera)
-        })
-      }
-      const stopButton = document.querySelector('#stopButton')
-      const changeButton = document.querySelector('#changeButton')
-      changeButton.addEventListener('click',()=>{
-        anchor.group.children.pop();
-        if(i==16){
-          i = 1
-        }else{
-          i++;
+          renderer.render(scene, camera);
+        });
+      };
+      let list = document.querySelector("#pngList");
+      let isLoad = false;
+      const init = () => {
+        for (let j = i; j > 0; j--) {
+          const btnItem = document.createElement("img");
+          list.appendChild(btnItem);
+          btnItem.src = `./assets/pngs/${j}.png`;
+          btnItem.onclick = () => {
+            if (isLoad) {
+              return;
+            }
+            isLoad = true;
+            anchor.group.children.pop();
+            loader.load(`./assets/head/${j}.glb`, (gltf) => {
+              gltf.scene.position.set(0, -3.8, -1);
+              gltf.scene.scale.set(1.9, 1.9, 1.9);
+              gltf.scene.name = "headwear";
+              anchor.group.add(gltf.scene);
+              isLoad = false;
+            });
+          };
         }
-        loader.load(`./assets/head/${i}.glb`,(gltf) => {
-        gltf.scene.position.set(0, -3.8, -1)
-        gltf.scene.scale.set(1.9,1.9,1.9)
-        gltf.scene.name = 'headwear'
-        anchor.group.add(gltf.scene)
-      })
-      })
-        start()
-      stopButton.addEventListener('click', () => {
-        mindarThree.stop()
-        mindarThree.renderer.setAnimationLoop(null)
-        renderer.render(scene, camera)
-      })
+      };
+
+      start();
     </script>
-  <style>
-    body {
-      margin: 0;
-    }
+    <style>
+      body {
+        margin: 0;
+      }
 
-    #container {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-      overflow: hidden;
-    }
+      #container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
 
-    #control {
-      width: 100vw;
-      display: flex;
-      justify-content: space-around;
-      position: fixed;
-      top: 50px;
-      left: 0;
-      z-index: 2;
-    }
+      #pngList {
+        display: flex;
+        justify-content: space-between;
+        width: 96%;
+        position: absolute;
+        left: 4%;
+        bottom: 5%;
+        overflow-x: auto;
+      }
+      img {
+        width: 30%;
+      }
+    </style>
+  </head>
 
-    button {
-      width: 30vw;
-      height: 50px;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="control">
-    <button id="changeButton">Change</button>
-    <button id="stopButton">Stop</button>
-  </div>
-  <div id="container"></div>
-</body>
-
+  <body>
+    <div id="container"></div>
+    <div id="pngList">
+      <img src="./assets/pngs/16.png" alt="" onclick="" />
+      <img src="./assets/pngs/15.png" alt="" />
+      <img src="./assets/pngs/14.png" alt="" />
+      <img src="./assets/pngs/13.png" alt="" />
+      <img src="./assets/pngs/12.png" alt="" />
+      <img src="./assets/pngs/11.png" alt="" />
+      <img src="./assets/pngs/10.png" alt="" />
+      <img src="./assets/pngs/9.png" alt="" />
+      <img src="./assets/pngs/8.png" alt="" />
+      <img src="./assets/pngs/7.png" alt="" />
+      <img src="./assets/pngs/6.png" alt="" />
+      <img src="./assets/pngs/5.png" alt="" />
+      <img src="./assets/pngs/4.png" alt="" />
+      <img src="./assets/pngs/3.png" alt="" />
+      <img src="./assets/pngs/2.png" alt="" />
+      <img src="./assets/pngs/1.png" alt="" />
+    </div>
+  </body>
 </html>
