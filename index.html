@@ -83,10 +83,22 @@
       };
 
       start();
+      let change = document.querySelector("#change");
+      change.addEventListener("click", () => {
+        mindarThree.switchCamera();
+      });
     </script>
     <style>
       body {
         margin: 0;
+      }
+
+      #change {
+        width: 26vw;
+        height: 10vw;
+        position: absolute;
+        left: 37vw;
+        top: 2vh;
       }
 
       #container {
@@ -112,6 +124,7 @@
   </head>
 
   <body>
+    <button id="change">change</button>
     <div id="container"></div>
     <div id="pngList"></div>
   </body>
